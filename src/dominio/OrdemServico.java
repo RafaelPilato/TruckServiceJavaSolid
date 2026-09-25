@@ -76,4 +76,19 @@ public class OrdemServico {
     public String getDescricaoServicoRealizado() {
         return descricaoServicoRealizado;
     }
+
+    @Override
+    public String toString() {
+        return "OrdemServico{" +
+                "id=" + id +
+                ", titulo='" + titulo + '\'' +
+                ", descricaoProblema='" + descricaoProblema + '\'' +
+                ", dataHoraAbertura=" + dataHoraAbertura +
+                ", finalizada=" + finalizada +
+                ", caminhao=" + caminhao +
+                ", mecanico=" + mecanico +
+                ", dataHoraFechamento=" + dataHoraFechamento +
+                ", descricaoServicoRealizado='" + descricaoServicoRealizado + '\'' +
+                '}';
+    }
 }
