@@ -21,6 +21,10 @@ public class OrdemServico {
         this.caminhao = caminhao;
     }
 
+    public void definirId(int id){
+        this.id = id;
+    }
+
     public boolean podeSerFinalizada(){
         return !finalizada;
     }
@@ -44,6 +48,8 @@ public class OrdemServico {
         this.dataHoraFechamento = dataHoraFechamento;
         this.descricaoServicoRealizado = descricaoServicoRealizado;
     }
+
+    public int getId() { return id; }
 
     public String getTitulo() {
         return titulo;
