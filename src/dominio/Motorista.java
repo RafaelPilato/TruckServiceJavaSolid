@@ -9,7 +9,7 @@ public class Motorista {
         if(nome == null || nome.isBlank()){
             throw new IllegalArgumentException("O nome é obrigatório!");
         }
-        if(contato == null || nome.isBlank()){
+        if(contato == null || contato.isBlank()){
             throw new IllegalArgumentException("O contato é obrigatório!");
         }
         this.nome = nome;

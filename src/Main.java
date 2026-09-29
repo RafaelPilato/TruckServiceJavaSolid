@@ -2,7 +2,7 @@ import dominio.Caminhao;
 import dominio.Mecanico;
 import dominio.Motorista;
 import dominio.OrdemServico;
-import repositorio.OrdemServicoRepositorioMemoria;
+import repositorio.*;
 
 import java.time.LocalDateTime;
 
