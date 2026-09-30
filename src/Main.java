@@ -4,7 +4,10 @@ import dominio.Motorista;
 import dominio.OrdemServico;
 import repositorio.*;
 
-import java.time.LocalDateTime;
+import custeio.CalculadoraCustoServico;
+import custeio.CustoPorHoraMecanico;
+import custeio.CustoGarantia;
+import excecao.OrdemServicoException;
 
 public class Main {
     public static void main(String[] args) {
@@ -32,7 +35,21 @@ public class Main {
 
         System.out.println(os);
 
-        os.finalizar(m1, LocalDateTime.parse("2026-09-25T12:13"), "Realizado traca de oleo e filtro");
+        // Simula um serviço de três horas, sem depender da data do computador.
+        os.finalizar(m1, os.getDataHoraAbertura().plusHours(3), "Realizada troca de óleo e filtro");
+
+        CalculadoraCustoServico calculadora = new CustoPorHoraMecanico(50.0);
+        System.out.println("Custo por hora (esperado 150.0): " + calculadora.calcular(os));
+
+        // A mesma interface permite trocar a regra de cálculo.
+        calculadora = new CustoGarantia();
+        System.out.println("Custo em garantia (esperado 0.0): " + calculadora.calcular(os));
+
+        try {
+            os.finalizar(m1, os.getDataHoraAbertura().plusHours(3), "Nova tentativa");
+        } catch (OrdemServicoException e) {
+            System.out.println("Falha ao finalizar: " + e.getMessage());
+        }
 
         if(os.podeSerFinalizada()){
             System.out.println("Sim pode");
@@ -47,6 +64,12 @@ public class Main {
         OrdemServico os2 = new OrdemServico("Troca de pneu", "Trocar os pneus da tração", c1);
 
         repositorio.salvar(os2);
+
+        try {
+            os2.finalizar(null, os2.getDataHoraAbertura().plusHours(3), "Troca dos pneus");
+        } catch (OrdemServicoException e) {
+            System.out.println("Falha ao finalizar: " + e.getMessage());
+        }
 
         System.out.println(os2);
 

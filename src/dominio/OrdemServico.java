@@ -1,6 +1,8 @@
 package dominio;
 
 import java.time.LocalDateTime;
+import excecao.DadosInvalidosParaFinalizarException;
+import excecao.OrdemServicoJaFinalizadaException;
 
 public class OrdemServico {
     private int id;
@@ -31,16 +33,19 @@ public class OrdemServico {
 
     public void finalizar(Mecanico mecanico, LocalDateTime dataHoraFechamento, String descricaoServicoRealizado){
         if(finalizada){
-            //Já finalizada
+            throw new OrdemServicoJaFinalizadaException("A ordem de serviço já está finalizada.");
         }
-        if(mecanico == null || dataHoraFechamento == null){
-            //Dados inválidos
+        if(mecanico == null){
+            throw new DadosInvalidosParaFinalizarException("O mecânico é obrigatório para finalizar.");
+        }
+        if(dataHoraFechamento == null){
+            throw new DadosInvalidosParaFinalizarException("A data de fechamento é obrigatória.");
         }
         if(dataHoraFechamento.isBefore(dataHoraAbertura)){
-            //Dado inválido
+            throw new DadosInvalidosParaFinalizarException("A data de fechamento não pode ser anterior à abertura.");
         }
         if(descricaoServicoRealizado == null || descricaoServicoRealizado.isBlank()){
-            //Dado inválido
+            throw new DadosInvalidosParaFinalizarException("A descrição do serviço realizado é obrigatória.");
         }
 
         this.finalizada = true;
