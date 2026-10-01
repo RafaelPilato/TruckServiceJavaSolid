@@ -52,4 +52,9 @@ public class Caminhao {
     public Motorista getMotorista() {
         return motorista;
     }
+
+    @Override
+    public String toString() {
+        return "Caminhao: " + getPlaca();
+    }
 }

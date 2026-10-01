@@ -2,85 +2,66 @@ import dominio.Caminhao;
 import dominio.Mecanico;
 import dominio.Motorista;
 import dominio.OrdemServico;
-import repositorio.*;
+import repositorio.OrdemServicoRepositorio;
+import repositorio.OrdemServicoRepositorioMemoria;
 
-import custeio.CalculadoraCustoServico;
 import custeio.CustoPorHoraMecanico;
 import custeio.CustoGarantia;
+import notificacao.NotificacaoEmail;
+import notificacao.NotificacaoWhatsApp;
 import excecao.OrdemServicoException;
+
+import servico.AberturaOrdemServicoService;
+import servico.FinalizacaoOrdemServicoService;
 
 public class Main {
     public static void main(String[] args) {
-        // Testes ----
-        Motorista m = new Motorista("Rafael Pilato", "rafael.pilato@gmail.com");
-        Caminhao c1 = new Caminhao("BDT6D88", "AB1234", "Scania", "R450", 2022, m);
-        Mecanico m1 = new Mecanico("Adolfo", "00011122233");
-        OrdemServico os = new OrdemServico("Troca de oleo", "Realizar troca de oleo mensal", c1);
 
-        /*
-        System.out.println(os);
-        System.out.println();
-        if(os.podeSerFinalizada()){
-            System.out.println("Sim pode");
-        }
-        else{
-            System.out.println("Não pode");
-        }
-        */
+        OrdemServicoRepositorio repositorio = new OrdemServicoRepositorioMemoria();
+        AberturaOrdemServicoService aberturaService = new AberturaOrdemServicoService(repositorio);
 
-        // Repositorio
-        OrdemServicoRepositorioMemoria repositorio = new OrdemServicoRepositorioMemoria();
+        // ---------- Cenário 1: cobrança por hora + notificação por e-mail ----------
+        Motorista motorista1 = new Motorista("Rafael Pilato", "rafael.pilato@gmail.com");
+        Caminhao caminhao1 = new Caminhao("BDT6D88", "AB1234", "Scania", "R450", 2022, motorista1);
+        Mecanico mecanico1 = new Mecanico("Geronimo", "00011122233");
 
-        repositorio.salvar(os);
+        OrdemServico os1 = aberturaService.abrir(caminhao1, "Troca de óleo", "Realizar troca de óleo mensal");
 
-        System.out.println(os);
+        FinalizacaoOrdemServicoService finalizacaoCenario1 = new FinalizacaoOrdemServicoService(
+                repositorio,
+                new CustoPorHoraMecanico(50.0),
+                new NotificacaoEmail()
+        );
 
-        // Simula um serviço de três horas, sem depender da data do computador.
-        os.finalizar(m1, os.getDataHoraAbertura().plusHours(3), "Realizada troca de óleo e filtro");
+        finalizacaoCenario1.finalizar(os1, mecanico1, os1.getDataHoraAbertura().plusHours(3), "Realizada troca de óleo e filtro");
+        System.out.println(os1);
 
-        CalculadoraCustoServico calculadora = new CustoPorHoraMecanico(50.0);
-        System.out.println("Custo por hora (esperado 150.0): " + calculadora.calcular(os));
+        // ---------- Cenário 2: serviço em garantia + notificação por WhatsApp ----------
+        Motorista motorista2 = new Motorista("Douglas Lima", "5541999998888");
+        Caminhao caminhao2 = new Caminhao("XYZ1A23", "CD5678", "Volvo", "FH540", 2023, motorista2);
+        Mecanico mecanico2 = new Mecanico("Jonas Pereira", "11122233344");
 
-        // A mesma interface permite trocar a regra de cálculo.
-        calculadora = new CustoGarantia();
-        System.out.println("Custo em garantia (esperado 0.0): " + calculadora.calcular(os));
+        OrdemServico os2 = aberturaService.abrir(caminhao2, "Troca de pneu", "Trocar os pneus da tração");
 
-        try {
-            os.finalizar(m1, os.getDataHoraAbertura().plusHours(3), "Nova tentativa");
-        } catch (OrdemServicoException e) {
-            System.out.println("Falha ao finalizar: " + e.getMessage());
-        }
+        FinalizacaoOrdemServicoService finalizacaoCenario2 = new FinalizacaoOrdemServicoService(
+                repositorio,
+                new CustoGarantia(),
+                new NotificacaoWhatsApp()
+        );
 
-        if(os.podeSerFinalizada()){
-            System.out.println("Sim pode");
-        }
-        else{
-            System.out.println("Não pode");
-        }
-
-        repositorio.salvar(os);
-        System.out.println(os);
-
-        OrdemServico os2 = new OrdemServico("Troca de pneu", "Trocar os pneus da tração", c1);
-
-        repositorio.salvar(os2);
-
-        try {
-            os2.finalizar(null, os2.getDataHoraAbertura().plusHours(3), "Troca dos pneus");
-        } catch (OrdemServicoException e) {
-            System.out.println("Falha ao finalizar: " + e.getMessage());
-        }
-
+        finalizacaoCenario2.finalizar(os2, mecanico2, os2.getDataHoraAbertura().plusHours(2), "Troca dos pneus da tração");
         System.out.println(os2);
 
-        for(OrdemServico oss : repositorio.listarTodas()){
-            System.out.println(oss);
+        // ---------- Teste de extensão: tentar finalizar de novo (deve falhar) ----------
+        try {
+            finalizacaoCenario1.finalizar(os1, mecanico1, os1.getDataHoraAbertura().plusHours(4), "Nova tentativa");
+        } catch (OrdemServicoException e) {
+            System.out.println("Falha ao finalizar: " + e.getMessage());
         }
 
-        System.out.println(repositorio.buscarPorId(2));
-
-        // ------------
-
-
+        System.out.println("Todas as OS cadastradas:");
+        for (OrdemServico os : repositorio.listarTodas()) {
+            System.out.println(os);
+        }
     }
 }
